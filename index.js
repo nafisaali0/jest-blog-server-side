@@ -1,5 +1,5 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
-require("dotenv").config();//hide DBpass 
+require("dotenv").config(); //hide DBpass
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -25,6 +25,26 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const blogCollection = client.db("blogWeb").collection("blogs");
+
+    app.get("/blogs", async (req, res) => {
+      const cursor = blogCollection.find();
+
+      // send data to DB in array formet
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/blogs", async (req, res) => {
+      const newBlog = req.body;
+      console.log(newBlog);
+
+      // send data to DB
+      const result = await blogCollection.insertOne(newBlog);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -32,7 +52,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
