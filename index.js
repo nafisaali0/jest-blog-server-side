@@ -27,7 +27,9 @@ async function run() {
     await client.connect();
 
     const blogCollection = client.db("blogWeb").collection("blogs");
+    const categoryCollection = client.db("blogWeb").collection("category");
 
+    // blogs api
     app.get("/blogs", async (req, res) => {
       const cursor = blogCollection.find();
 
@@ -44,7 +46,14 @@ async function run() {
       const result = await blogCollection.insertOne(newBlog);
       res.send(result);
     });
+    // category api
+    app.get("/category", async (req, res) => {
+      const cursor = categoryCollection.find();
 
+      //send data to DB in array formet
+      const result = await cursor.toArray();
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
