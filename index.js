@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config(); //hide DBpass
 const express = require("express");
 const cors = require("cors");
@@ -35,6 +35,13 @@ async function run() {
 
       // send data to DB in array formet
       const result = await cursor.toArray();
+      res.send(result);
+    });
+    //read or get specific products by id using get method
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogCollection.findOne(query);
       res.send(result);
     });
 
