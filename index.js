@@ -70,6 +70,14 @@ async function run() {
       const result = await commentCollection.insertOne(newComments);
       res.send(result);
     });
+    app.get("/comments", async (req, res) => {
+      const cursor = commentCollection.find();
+      // let query = {};
+      console.log(req.query)
+      //send data to DB in array formet
+      const result = await cursor.toArray();
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
