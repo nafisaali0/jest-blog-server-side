@@ -71,13 +71,17 @@ async function run() {
       res.send(result);
     });
     app.get("/comments", async (req, res) => {
-      const cursor = commentCollection.find();
-      // let query = {};
-      console.log(req.query)
+      console.log(req.query.blog_id);
+      let query = {};
+      if (req.query?.blog_id) {
+        query = { blog_id: req.query.blog_id };
+      }
       //send data to DB in array formet
-      const result = await cursor.toArray();
+      const result = await commentCollection.find(query).toArray();
+      // console.log({ result });
       res.send(result);
     });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
