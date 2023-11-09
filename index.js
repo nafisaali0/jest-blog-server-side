@@ -28,6 +28,7 @@ async function run() {
 
     const blogCollection = client.db("blogWeb").collection("blogs");
     const categoryCollection = client.db("blogWeb").collection("category");
+    const commentCollection = client.db("blogWeb").collection("comments");
 
     // blogs api
     app.get("/blogs", async (req, res) => {
@@ -59,6 +60,14 @@ async function run() {
 
       //send data to DB in array formet
       const result = await cursor.toArray();
+      res.send(result);
+    });
+    //comments api
+    app.post("/comments", async (req, res) => {
+      const newComments = req.body;
+      console.log(newComments);
+      // send data to DB
+      const result = await commentCollection.insertOne(newComments);
       res.send(result);
     });
     // Send a ping to confirm a successful connection
