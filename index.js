@@ -81,7 +81,24 @@ async function run() {
       // console.log({ result });
       res.send(result);
     });
+    //read or get specific comments products by id using get method
+    app.get("/comments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
 
+      // send data to DB
+      const result = await commentCollection.findOne(query);
+      res.send(result);
+    });
+    // delete comment
+    app.delete("/comments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      // send data to DB
+      const result = await commentCollection.deleteOne(query);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
