@@ -65,13 +65,13 @@ async function run() {
     //comments api
     app.post("/comments", async (req, res) => {
       const newComments = req.body;
-      console.log(newComments);
+      // console.log(newComments);
       // send data to DB
       const result = await commentCollection.insertOne(newComments);
       res.send(result);
     });
     app.get("/comments", async (req, res) => {
-      console.log(req.query.blog_id);
+      // console.log(req.query.blog_id);
       let query = {};
       if (req.query?.blog_id) {
         query = { blog_id: req.query.blog_id };
