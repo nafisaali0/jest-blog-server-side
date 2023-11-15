@@ -35,10 +35,16 @@ async function run() {
 
     // show all blog in server from db
     app.get("/blogs", async (req, res) => {
-      const cursor = blogCollection.find();
-
       // show data from DB in array formet
-      const result = await cursor.toArray();
+      const result = await blogCollection.find().toArray();
+      res.send(result);
+    });
+    //read or get specific blog by category
+    app.get("/blogs/category/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+      // data come from mongo
+      const result = await blogCollection.find(query).toArray();
       res.send(result);
     });
     //read or get specific blog by id
@@ -84,6 +90,8 @@ async function run() {
       );
       res.send(result);
     });
+
+    //show all blog based on category
 
     //---- blog api end---
 
