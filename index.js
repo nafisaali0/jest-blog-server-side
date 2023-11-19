@@ -91,8 +91,6 @@ async function run() {
       res.send(result);
     });
 
-    //show all blog based on category
-
     //---- blog api end---
 
     //---category api start---
@@ -153,8 +151,7 @@ async function run() {
     // add blog in wishlist DB
     app.post("/wishlist", async (req, res) => {
       const newBlog = req.body;
-      console.log(newBlog);
-
+      // console.log(newBlog);
       // send data to DB
       const result = await wishListCollection.insertOne(newBlog);
       res.send(result);
