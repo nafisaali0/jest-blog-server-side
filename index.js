@@ -93,18 +93,7 @@ async function run() {
 
     //---- blog api end---
 
-    //---category api start---
-
-    //show all category in server from DB
-    app.get("/category", async (req, res) => {
-      const cursor = categoryCollection.find();
-
-      //show all data to DB in array formet
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    //---comments api end---
+    
 
     //create comment from user and load in DB
     app.post("/comments", async (req, res) => {
