@@ -27,7 +27,6 @@ async function run() {
     // await client.connect();
 
     const blogCollection = client.db("blogWeb").collection("blogs");
-    const categoryCollection = client.db("blogWeb").collection("category");
     const commentCollection = client.db("blogWeb").collection("comments");
     const wishListCollection = client.db("blogWeb").collection("wishlist");
 
@@ -93,8 +92,6 @@ async function run() {
 
     //---- blog api end---
 
-    
-
     //create comment from user and load in DB
     app.post("/comments", async (req, res) => {
       const newComments = req.body;
@@ -140,9 +137,10 @@ async function run() {
     // add blog in wishlist DB
     app.post("/wishlist", async (req, res) => {
       const newBlog = req.body;
-      // console.log(newBlog);
+
       // send data to DB
       const result = await wishListCollection.insertOne(newBlog);
+      // finish check
       res.send(result);
     });
     //read or get specific wishlist's blogs by id
