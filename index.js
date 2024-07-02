@@ -27,8 +27,10 @@ async function run() {
 
     const blogCollection = client.db("blogWeb").collection("blogs");
     const commentCollection = client.db("blogWeb").collection("comments");
+    const likeCollection = client.db("blogWeb").collection("likes");
     const wishListCollection = client.db("blogWeb").collection("wishlist");
     const userCollection = client.db("blogWeb").collection("users");
+    const followerCollection = client.db("blogWeb").collection("followers");
 
     //--- blogs api start---
 
@@ -183,7 +185,6 @@ async function run() {
     //---wishlist api finish---
 
     // users api start
-
     app.get("/users", async (req, res) => {
       let query = {};
       // condition for show users based on current user wishlist
@@ -215,9 +216,10 @@ async function run() {
       const updatedUserInfo = req.body;
       const updatedUsers = {
         $set: {
-          photo:updatedUserInfo.photo,
+          photo: updatedUserInfo.photo,
           fname: updatedUserInfo.fname,
           lname: updatedUserInfo.lname,
+          name: updatedUserInfo.name,
           bio: updatedUserInfo.bio,
           email: updatedUserInfo.email,
           work: updatedUserInfo.work,
@@ -233,7 +235,7 @@ async function run() {
         options
       );
       res.send(result);
-    });    
+    });
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -242,9 +244,111 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
-
     // users api end
-    
+
+    //create followers DB
+    app.post("/followers", async (req, res) => {
+      const newfollower = req.body;
+
+      // send data to DB
+      const result = await followerCollection.insertOne(newfollower);
+      res.send(result);
+    });
+    //show all followers
+    app.get("/followers", async (req, res) => {
+      let query = {};
+      //set query for show follower
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      //send data to DB in array formet
+      const result = await followerCollection.find(query).toArray();
+      res.send(result);
+    });
+    //read or get specific follower by id
+    app.get("/followers/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      // send data to DB
+      const result = await followerCollection.findOne(query);
+      res.send(result);
+    });
+    // delete followers
+    app.delete("/followers/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      // send data to DB
+      const result = await followerCollection.deleteOne(query);
+      res.send(result);
+    });
+    //---followers api finish---
+
+    // likes api start
+
+    app.get("/likes", async (req, res) => {
+      let query = {};
+      // condition for show users based on current user wishlist
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      const result = await likeCollection.find(query).toArray();
+      res.send(result);
+
+      // const result = await userCollection.find().toArray();
+      // res.send(result);
+    });
+    app.post("/likes", async (req, res) => {
+      const user = req.body;
+
+      const query = { email: user.email };
+      const existingUser = await likeCollection.findOne(query);
+
+      if (existingUser) {
+        return res.send({ message: "user already exists", insertedId: null });
+      }
+      const result = await likeCollection.insertOne(user);
+      res.send(result);
+    });
+    // app.put("/likes/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updatedUserInfo = req.body;
+    //   const updatedUsers = {
+    //     $set: {
+    //       photo: updatedUserInfo.photo,
+    //       fname: updatedUserInfo.fname,
+    //       lname: updatedUserInfo.lname,
+    //       name: updatedUserInfo.name,
+    //       bio: updatedUserInfo.bio,
+    //       email: updatedUserInfo.email,
+    //       work: updatedUserInfo.work,
+    //       education: updatedUserInfo.education,
+    //       protfolio: updatedUserInfo.protfolio,
+    //       github: updatedUserInfo.github,
+    //       linkedin: updatedUserInfo.linkedin,
+    //     },
+    //   };
+    //   const result = await likeCollection.updateOne(
+    //     filter,
+    //     updatedUsers,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
+    // app.delete("/likes/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+
+    //   // send data to DB
+    //   const result = await likeCollection.deleteOne(query);
+    //   res.send(result);
+    // });
+
+    // like api end
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
