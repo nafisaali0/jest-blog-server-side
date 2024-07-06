@@ -289,26 +289,30 @@ async function run() {
 
     app.get("/likes", async (req, res) => {
       let query = {};
-      // condition for show users based on current user wishlist
+      // condition for show blogs based on current user likes
       if (req.query?.email) {
-        query = { email: req.query.email };
+        query = { owner_email: req.query.email};
       }
       const result = await likeCollection.find(query).toArray();
       res.send(result);
-
-      // const result = await userCollection.find().toArray();
-      // res.send(result);
     });
     app.post("/likes", async (req, res) => {
-      const user = req.body;
+      const newLike = req.body;
+      const { blog_id, owner_email } = newLike;
 
-      const query = { email: user.email };
-      const existingUser = await likeCollection.findOne(query);
+      // Check if the user has already liked the blog post
+      const existingLike = await likeCollection.findOne({
+        blog_id,
+        owner_email,
+      });
 
-      if (existingUser) {
-        return res.send({ message: "user already exists", insertedId: null });
+      if (existingLike) {
+        res.status(400).send({ message: "User has already liked this post" });
+        return;
       }
-      const result = await likeCollection.insertOne(user);
+
+      // Send data to DB
+      const result = await likeCollection.insertOne(newLike);
       res.send(result);
     });
     // app.put("/likes/:id", async (req, res) => {
