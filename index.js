@@ -247,13 +247,33 @@ async function run() {
     // users api end
 
     //create followers DB
+    // app.post("/followers", async (req, res) => {
+    //   const newfollower = req.body;
+
+    //   // send data to DB
+    //   const result = await followerCollection.insertOne(newfollower);
+    //   res.send(result);
+    // });
     app.post("/followers", async (req, res) => {
       const newfollower = req.body;
+      const { followersEmail, email } = newfollower;
 
-      // send data to DB
+      // Check if the user has already liked the blog post
+      const existingFollowers = await followerCollection.findOne({
+        followersEmail,
+        email,
+      });
+
+      if (existingFollowers) {
+        res.status(400).send({ message: "User has already liked this post" });
+        return;
+      }
+
+      // Send data to DB
       const result = await followerCollection.insertOne(newfollower);
       res.send(result);
     });
+    //check
     //show all followers
     app.get("/followers", async (req, res) => {
       let query = {};
@@ -291,7 +311,7 @@ async function run() {
       let query = {};
       // condition for show blogs based on current user likes
       if (req.query?.email) {
-        query = { owner_email: req.query.email};
+        query = { owner_email: req.query.email };
       }
       const result = await likeCollection.find(query).toArray();
       res.send(result);
@@ -315,41 +335,6 @@ async function run() {
       const result = await likeCollection.insertOne(newLike);
       res.send(result);
     });
-    // app.put("/likes/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const options = { upsert: true };
-    //   const updatedUserInfo = req.body;
-    //   const updatedUsers = {
-    //     $set: {
-    //       photo: updatedUserInfo.photo,
-    //       fname: updatedUserInfo.fname,
-    //       lname: updatedUserInfo.lname,
-    //       name: updatedUserInfo.name,
-    //       bio: updatedUserInfo.bio,
-    //       email: updatedUserInfo.email,
-    //       work: updatedUserInfo.work,
-    //       education: updatedUserInfo.education,
-    //       protfolio: updatedUserInfo.protfolio,
-    //       github: updatedUserInfo.github,
-    //       linkedin: updatedUserInfo.linkedin,
-    //     },
-    //   };
-    //   const result = await likeCollection.updateOne(
-    //     filter,
-    //     updatedUsers,
-    //     options
-    //   );
-    //   res.send(result);
-    // });
-    // app.delete("/likes/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-
-    //   // send data to DB
-    //   const result = await likeCollection.deleteOne(query);
-    //   res.send(result);
-    // });
 
     // like api end
 
