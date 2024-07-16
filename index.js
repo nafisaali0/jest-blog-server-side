@@ -56,6 +56,14 @@ async function run() {
       const result = await blogCollection.findOne(query);
       res.send(result);
     });
+    // get data by email
+    app.get("/blogs/bloggeremail/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { owner_Email: email };
+      // data come from mongo
+      const result = await blogCollection.find(query).toArray();
+      res.send(result);
+    });
     // create new blog
     app.post("/blogs", async (req, res) => {
       const newBlog = req.body;
@@ -247,13 +255,6 @@ async function run() {
     // users api end
 
     //create followers DB
-    // app.post("/followers", async (req, res) => {
-    //   const newfollower = req.body;
-
-    //   // send data to DB
-    //   const result = await followerCollection.insertOne(newfollower);
-    //   res.send(result);
-    // });
     app.post("/followers", async (req, res) => {
       const newfollower = req.body;
       const { followersEmail, email } = newfollower;
@@ -273,7 +274,6 @@ async function run() {
       const result = await followerCollection.insertOne(newfollower);
       res.send(result);
     });
-    //check
     //show all followers
     app.get("/followers", async (req, res) => {
       let query = {};
