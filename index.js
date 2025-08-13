@@ -225,8 +225,6 @@ async function run() {
       const updatedUsers = {
         $set: {
           photo: updatedUserInfo.photo,
-          fname: updatedUserInfo.fname,
-          lname: updatedUserInfo.lname,
           name: updatedUserInfo.name,
           bio: updatedUserInfo.bio,
           email: updatedUserInfo.email,
@@ -250,6 +248,12 @@ async function run() {
 
       // send data to DB
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+    app.get("/users/:email", async (req, res) => {
+      const email = decodeURIComponent(req.params.email);
+      const query = { email: email };
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
     // users api end
