@@ -311,33 +311,81 @@ async function run() {
 
     // likes api start
 
+    // app.get("/likes", async (req, res) => {
+    //   let query = {};
+    //   // condition for show blogs based on current user likes
+    //   if (req.query?.email) {
+    //     query = { owner_email: req.query.email };
+    //   }
+    //   const result = await likeCollection.find(query).toArray();
+    //   res.send(result);
+    // });
+    // app.post("/likes", async (req, res) => {
+    //   const newLike = req.body;
+    //   const { blog_id, owner_email } = newLike;
+
+    //   // Check if the user has already liked the blog post
+    //   const existingLike = await likeCollection.findOne({
+    //     blog_id,
+    //     owner_email,
+    //   });
+
+    //   if (existingLike) {
+    //     res.status(400).send({ message: "User has already liked this post" });
+    //     return;
+    //   }
+
+    //   // Send data to DB
+    //   const result = await likeCollection.insertOne(newLike);
+    //   res.send(result);
+    // });
+
+    // new check
+
+    //  new check working or not
+    
     app.get("/likes", async (req, res) => {
       let query = {};
-      // condition for show blogs based on current user likes
+
       if (req.query?.email) {
-        query = { owner_email: req.query.email };
+        query.owner_email = req.query.email;
       }
+      if (req.query?.blog_id) {
+        query.blog_id = req.query.blog_id;
+      }
+
       const result = await likeCollection.find(query).toArray();
       res.send(result);
     });
-    app.post("/likes", async (req, res) => {
-      const newLike = req.body;
-      const { blog_id, owner_email } = newLike;
 
-      // Check if the user has already liked the blog post
+    app.post("/likes", async (req, res) => {
+      const { blog_id, owner_email, owner_name, owner_image } = req.body;
+
+      // আগে থেকেই লাইক আছে কিনা চেক করো
       const existingLike = await likeCollection.findOne({
         blog_id,
         owner_email,
       });
 
       if (existingLike) {
-        res.status(400).send({ message: "User has already liked this post" });
-        return;
+        // যদি থাকে → unlike (delete)
+        await likeCollection.deleteOne({ _id: existingLike._id });
+        return res.send({ message: "Unliked", status: "unliked" });
       }
 
-      // Send data to DB
-      const result = await likeCollection.insertOne(newLike);
-      res.send(result);
+      // না থাকলে → নতুন লাইক দাও
+      const result = await likeCollection.insertOne({
+        blog_id,
+        owner_email,
+        owner_name,
+        owner_image,
+        like: 1,
+      });
+      res.send({
+        message: "Liked",
+        status: "liked",
+        insertedId: result.insertedId,
+      });
     });
 
     // like api end
