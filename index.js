@@ -122,7 +122,7 @@ async function run() {
     app.get("/comments", async (req, res) => {
       let query = {};
       //set query for show comments for fixed blog id
-       if (req.query?.blog_id) {
+      if (req.query?.blog_id) {
         query.blog_id = req.query.blog_id;
       }
       //send data to DB in array formet
@@ -312,47 +312,72 @@ async function run() {
     app.get("/likes", async (req, res) => {
       let query = {};
 
+      // যদি query parameter এ email থাকে
       if (req.query?.email) {
-        query.owner_email = req.query.email;
-      }
-      if (req.query?.blog_id) {
-        query.blog_id = req.query.blog_id;
+        query.userEmail = req.query.email;
       }
 
-      const result = await likeCollection.find(query).toArray();
+      try {
+        const result = await likeCollection.find(query).toArray();
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({ error: "Failed to fetch likes" });
+      }
+    });
+
+    // new check
+    app.get("/likes", async (req, res) => {
+      const result = await likeCollection.find().toArray();
       res.send(result);
     });
 
+    // GET /likes/:blogId/:userEmail
+    app.get("/likes/:blogId/:userEmail", async (req, res) => {
+      const { blogId, userEmail } = req.params;
+
+      try {
+        // মোট count
+        const count = await likeCollection.countDocuments({ blogId });
+
+        // user already liked কিনা
+        const liked = await likeCollection.findOne({ blogId, userEmail });
+
+        res.send({
+          count,
+          liked: !!liked,
+        });
+      } catch (err) {
+        res.status(500).send({ error: "Failed to fetch likes" });
+      }
+    });
+    // POST /likes
     app.post("/likes", async (req, res) => {
-      const { blog_id, owner_email, owner_name, owner_image } = req.body;
+      const { blogId, userEmail } = req.body;
 
-      // আগে থেকেই লাইক আছে কিনা চেক করো
-      const existingLike = await likeCollection.findOne({
-        blog_id,
-        owner_email,
-      });
-
-      if (existingLike) {
-        // যদি থাকে → unlike (delete)
-        await likeCollection.deleteOne({ _id: existingLike._id });
-        return res.send({ message: "Unliked", status: "unliked" });
+      if (!blogId || !userEmail) {
+        return res.status(400).send({ error: "blogId and userEmail required" });
       }
 
-      // না থাকলে → নতুন লাইক দাও
-      const result = await likeCollection.insertOne({
-        blog_id,
-        owner_email,
-        owner_name,
-        owner_image,
-        like: 1,
-      });
-      res.send({
-        message: "Liked",
-        status: "liked",
-        insertedId: result.insertedId,
-      });
-    });
+      try {
+        const existing = await likeCollection.findOne({ blogId, userEmail });
 
+        if (existing) {
+          // আগে like করা থাকলে → unlike
+          await likeCollection.deleteOne({ blogId, userEmail });
+        } else {
+          // না থাকলে → নতুন like
+          await likeCollection.insertOne({ blogId, userEmail });
+        }
+
+        // update এর পরে count বের করো
+        const count = await likeCollection.countDocuments({ blogId });
+        const liked = !existing;
+
+        res.send({ count, liked });
+      } catch (err) {
+        res.status(500).send({ error: "Failed to toggle like" });
+      }
+    });
     // like api end
 
     // Send a ping to confirm a successful connection
