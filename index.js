@@ -312,7 +312,6 @@ async function run() {
     app.get("/likes", async (req, res) => {
       let query = {};
 
-      // যদি query parameter এ email থাকে
       if (req.query?.email) {
         query.userEmail = req.query.email;
       }
@@ -325,21 +324,15 @@ async function run() {
       }
     });
 
-    // new check
     app.get("/likes", async (req, res) => {
       const result = await likeCollection.find().toArray();
       res.send(result);
     });
-
-    // GET /likes/:blogId/:userEmail
     app.get("/likes/:blogId/:userEmail", async (req, res) => {
       const { blogId, userEmail } = req.params;
 
       try {
-        // মোট count
         const count = await likeCollection.countDocuments({ blogId });
-
-        // user already liked কিনা
         const liked = await likeCollection.findOne({ blogId, userEmail });
 
         res.send({
@@ -350,26 +343,20 @@ async function run() {
         res.status(500).send({ error: "Failed to fetch likes" });
       }
     });
-    // POST /likes
     app.post("/likes", async (req, res) => {
       const { blogId, userEmail } = req.body;
 
       if (!blogId || !userEmail) {
         return res.status(400).send({ error: "blogId and userEmail required" });
       }
-
       try {
         const existing = await likeCollection.findOne({ blogId, userEmail });
 
         if (existing) {
-          // আগে like করা থাকলে → unlike
           await likeCollection.deleteOne({ blogId, userEmail });
         } else {
-          // না থাকলে → নতুন like
           await likeCollection.insertOne({ blogId, userEmail });
         }
-
-        // update এর পরে count বের করো
         const count = await likeCollection.countDocuments({ blogId });
         const liked = !existing;
 
